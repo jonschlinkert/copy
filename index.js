@@ -121,13 +121,11 @@ copy.one = function copyOne(fp, dest, options, cb) {
   }
 
   var opts = defaults(fp, dest, options);
-
   mkdir(dest, opts, function (err) {
     if (err) return cb(err);
 
     try {
-      var res = opts.rewrite(fp, dest);
-      copy.base(fp, res, opts);
+      copy.base(fp, opts.rewrite(fp, dest), opts);
       return cb();
     } catch(err) {
       return cb(err);
@@ -150,8 +148,7 @@ copy.oneSync = function copyOneSync(fp, dest, options) {
   var opts = defaults(fp, dest, options);
   try {
     mkdir.sync(dest, opts);
-    var res = opts.rewrite(fp, dest);
-    copy.base(fp, res);
+    copy.base(fp, opts.rewrite(fp, dest));
   } catch (err) {
     throw new Error(err);
   }
@@ -180,19 +177,14 @@ copy.base = function copyBase(src, dest, opts) {
  */
 
 function rewrite(fp, dest, options) {
-  options = options || {};
-  dest = unixify(dest);
-  if (options.flatten) {
-    dest = path.basename(dest);
-  }
-  if (options.destBase) {
-    dest = path.join(options.destBase, dest);
-  }
+  // options = options || {};
+  // if (options.flatten) {
+  //   dest = path.basename(dest);
+  // }
+  // if (options.destBase) {
+  //   dest = path.join(options.destBase, dest);
+  // }
   return path.resolve(dest, path.basename(fp));
-}
-
-function unixify(fp) {
-  return fp.split(/[\\\/]+/).join('/');
 }
 
 /**
@@ -215,6 +207,10 @@ function defaults(pattern, dest, options) {
     opts.srcBase = opts.cwd;
   }
   return extend(opts, options);
+}
+
+function unixify(fp) {
+  return fp.split(/[\\\/]+/).join('/');
 }
 
 /**
