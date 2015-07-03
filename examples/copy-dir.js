@@ -1,5 +1,3 @@
-'use strict';
-
 var copy = require('..');
 
 copy.dir('fixtures', 'actual', function (err) {

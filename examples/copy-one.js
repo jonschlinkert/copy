@@ -1,5 +1,3 @@
-'use strict';
-
 var copy = require('..');
 
 copy.one('fixtures/a.txt', 'actual', function (err) {
