@@ -21,8 +21,8 @@ function walk(dir, cb) {
     if (err) return cb(err);
 
     async.reduce(files, [], function(acc, fp, next) {
-      var name = fp;
-      fp = path.join(dir, name);
+      var segment = fp;
+      fp = path.join(dir, segment);
 
       fs.stat(fp, function(err, stat) {
         if (err) return next(err);
@@ -42,10 +42,10 @@ function walk(dir, cb) {
 recurse.sync = function recurseSync(dir, res) {
   res = res || [];
   var files = fs.readdirSync(dir);
-  var len = files.length;
-  while (len--) {
-    var name = files[len];
-    var fp = path.join(dir, name);
+  var len = files.length, i = -1;
+  while (++i < len) {
+    var segment = files[i];
+    var fp = path.join(dir, segment);
 
     if (fs.statSync(fp).isDirectory()) {
       recurse.sync(fp, res);
@@ -57,19 +57,20 @@ recurse.sync = function recurseSync(dir, res) {
 };
 
 recurse.promise = function recursePromise(dir) {
-  return readdir(dir).map(function (nam) {
-    var fp = path.join(dir, nam);
-
-    return stats(fp).then(function (stat) {
-      if (stat.isDirectory()) {
-        return recurse.promise(fp);
-      }
-      return fp;
-    });
-
-  }).reduce(function (acc, files) {
-    return acc.concat(files);
-  }, []);
+  return readdir(dir)
+    .map(function (segment) {
+      var fp = path.join(dir, segment);
+      return stats(fp)
+        .then(function (stat) {
+          if (stat.isDirectory()) {
+            return recurse.promise(fp);
+          }
+          return fp;
+        });
+    })
+    .reduce(function (acc, files) {
+      return acc.concat(files);
+    }, []);
 };
 
 /**
