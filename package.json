@@ -10,7 +10,8 @@
   },
   "license": "MIT",
   "files": [
-    "index.js"
+    "index.js",
+    "recurse.js"
   ],
   "main": "index.js",
   "engines": {
