@@ -121,11 +121,12 @@ copy.one = function copyOne(fp, dest, options, cb) {
   }
 
   var opts = defaults(fp, dest, options);
-  mkdir(dest, opts, function (err) {
+  var destFile = opts.rewrite(fp, dest);
+  mkdir(path.dirname(destFile), opts, function (err) {
     if (err) return cb(err);
 
     try {
-      copy.base(fp, opts.rewrite(fp, dest), opts);
+      copy.base(fp, destFile, opts);
       return cb();
     } catch(err) {
       return cb(err);
@@ -146,9 +147,10 @@ copy.one = function copyOne(fp, dest, options, cb) {
 
 copy.oneSync = function copyOneSync(fp, dest, options) {
   var opts = defaults(fp, dest, options);
+  var destFile = opts.rewrite(fp, dest);
   try {
-    mkdir.sync(dest, opts);
-    copy.base(fp, opts.rewrite(fp, dest));
+    mkdir.sync(path.dirname(destFile), opts);
+    copy.base(fp, destFile);
   } catch (err) {
     throw new Error(err);
   }
