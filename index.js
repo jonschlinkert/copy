@@ -148,7 +148,7 @@ copy.oneSync = function copyOneSync(fp, dest, options) {
   var opts = defaults(fp, dest, options);
   try {
     mkdir.sync(dest, opts);
-    copy.base(fp, opts.rewrite(fp, dest));
+    copy.base(fp, opts.rewrite(fp, dest), opts);
   } catch (err) {
     throw new Error(err);
   }
