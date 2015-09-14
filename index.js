@@ -179,13 +179,6 @@ copy.base = function copyBase(src, dest, opts) {
  */
 
 function rewrite(fp, dest, options) {
-  // options = options || {};
-  // if (options.flatten) {
-  //   dest = path.basename(dest);
-  // }
-  // if (options.destBase) {
-  //   dest = path.join(options.destBase, dest);
-  // }
   return path.resolve(dest, path.basename(fp));
 }
 
