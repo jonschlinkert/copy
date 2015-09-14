@@ -1,7 +1,7 @@
 {
   "name": "copy",
   "description": "Copy files or directories using globs.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/jonschlinkert/copy",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/copy",
@@ -48,5 +48,17 @@
     "stream",
     "sync",
     "system"
-  ]
+  ],
+  "verb": {
+    "related": {
+      "list": [
+        "write",
+        "expand-config",
+        "expand-target",
+        "expand-task",
+        "expand-files",
+        "export-files"
+      ]
+    }
+  }
 }
