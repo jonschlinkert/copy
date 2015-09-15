@@ -8,6 +8,7 @@ var extend = require('extend-shallow');
 var parent = require('glob-parent');
 var mkdir = require('mkdirp');
 var recurse = require('./recurse');
+var debug = require('debug')('copy');
 
 /**
  * Asynchronously copy a glob of files from `a` to `b`.
@@ -145,10 +146,22 @@ copy.one = function copyOne(fp, dest, options, cb) {
  */
 
 copy.oneSync = function copyOneSync(fp, dest, options) {
+  
+  
   var opts = defaults(fp, dest, options);
   try {
-    mkdir.sync(dest, opts);
-    copy.base(fp, opts.rewrite(fp, dest), opts);
+    if(fs.lstatSync(fp).isFile()){
+      var destDir = dest;
+      var destFile = opts.rewrite(fp, dest);
+      
+      if(opts.flatten === false){
+        destFile = path.join(dest, path.relative(options.srcBase, fp));
+        destDir = path.join(dest, path.relative(options.srcBase, path.dirname(fp)));
+      }
+      debug('ONESYNC',opts.flatten,destDir,destFile,fp);
+      mkdir.sync(destDir, opts);
+      copy.base(fp, destFile, opts);
+    }
   } catch (err) {
     throw new Error(err);
   }
@@ -197,6 +210,8 @@ function rewrite(fp, dest, options) {
 function defaults(pattern, dest, options) {
   var opts = {};
   opts.cwd = process.cwd();
+  
+  
   opts.rewrite = function (fp, dest) {
     return rewrite(fp, dest, this);
   };
@@ -206,6 +221,12 @@ function defaults(pattern, dest, options) {
   if (typeof opts.srcBase === 'undefined') {
     opts.srcBase = opts.cwd;
   }
+  
+  if (options && typeof options.flatten === 'boolean') {
+    opts.flatten = options.flatten;
+  }
+  
+  debug('FLATTEN', opts.flatten);
   return extend(opts, options);
 }
 
