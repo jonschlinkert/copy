@@ -3,11 +3,26 @@
 var fs = require('graceful-fs');
 var path = require('path');
 var async = require('async');
-var glob = require('lazy-globby');
+var mkdir = require('mkdirp');
+var files = require('expand-files');
 var extend = require('extend-shallow');
 var parent = require('glob-parent');
-var mkdir = require('mkdirp');
 var recurse = require('./recurse');
+
+function expand(patterns, dest, options) {
+  var opts = extend({expand: true, rename: function (dest, fp, opts) {
+    if (Array.isArray(fp)) return dest;
+    if (opts.globParent) {
+      if (opts.globParent === '.') {
+        return path.join(dest, fp);
+      }
+      return path.join(dest, fp.replace(opts.globParent, ''));
+    }
+    return path.join(dest, fp);
+  }}, options);
+  var config = files(opts);
+  return config.expand({src: patterns, dest: dest});
+}
 
 /**
  * Asynchronously copy a glob of files from `a` to `b`.
@@ -26,14 +41,19 @@ function copy(patterns, dest, options, cb) {
     cb = options;
     options = {};
   }
-
   var opts = defaults(patterns, dest, options);
+  var files = expand(patterns, dest, opts).files;
+  async.each(files, function (file, next) {
+    async.each(file.src, function (fp, nextSrc) {
+      copy.one(fp, file.dest, file.options, nextSrc);
+    }, next);
+  }, cb);
 
-  glob()(patterns, opts, function (err, files) {
-    async.each(files, function (fp, next) {
-      copy.one(fp, dest, opts, next);
-    }, cb);
-  });
+  // glob()(patterns, opts, function (err, files) {
+  //   async.each(files, function (fp, next) {
+  //     copy.one(fp, dest, opts, next);
+  //   }, cb);
+  // });
 }
 
 /**
@@ -47,14 +67,24 @@ function copy(patterns, dest, options, cb) {
 
 copy.sync = function copySync(patterns, dest, options) {
   var opts = defaults(patterns, dest, options);
-
-  glob().sync(patterns, opts).forEach(function (fp) {
-    try {
-      copy.oneSync(fp, dest, opts);
-    } catch (err) {
-      throw new Error(err);
-    }
+  var files = expand(patterns, dest, options).files;
+  files.forEach(function (file) {
+    file.src.forEach(function (fp) {
+      try {
+        copy.oneSync(fp, file.dest, file.options);
+      } catch (err) {
+        throw new Error(err);
+      }
+    });
   });
+
+  // glob().sync(patterns, opts).forEach(function (fp) {
+  //   try {
+  //     copy.oneSync(fp, dest, opts);
+  //   } catch (err) {
+  //     throw new Error(err);
+  //   }
+  // });
 };
 
 /**
@@ -150,7 +180,7 @@ copy.oneSync = function copyOneSync(fp, dest, options) {
   var destFile = opts.rewrite(fp, dest);
   try {
     mkdir.sync(path.dirname(destFile), opts);
-    copy.base(fp, destFile);
+    copy.base(fp, destFile, opts);
   } catch (err) {
     throw new Error(err);
   }
@@ -166,7 +196,7 @@ copy.oneSync = function copyOneSync(fp, dest, options) {
  */
 
 copy.base = function copyBase(src, dest, opts) {
-  src = path.resolve(opts.cwd, src);
+  // src = path.resolve(opts.cwd, src);
   fs.createReadStream(src).pipe(fs.createWriteStream(dest));
 };
 
@@ -179,7 +209,17 @@ copy.base = function copyBase(src, dest, opts) {
  */
 
 function rewrite(fp, dest, options) {
-  return path.resolve(dest, path.basename(fp));
+  if (options.expand) {
+    return dest;
+  }
+  if (!options.globParent) {
+    return path.resolve(dest, path.basename(fp));
+  }
+  var start = path.resolve(options.cwd, options.globParent) + '/';
+  var basename = fp.replace(start, '');
+  var d = path.resolve(dest, basename);
+  return d;
+  // return path.resolve(dest, path.basename(fp));
 }
 
 /**
@@ -195,12 +235,12 @@ function defaults(pattern, dest, options) {
   opts.rewrite = function (fp, dest) {
     return rewrite(fp, dest, this);
   };
-  if (typeof pattern === 'string') {
-    opts.srcBase = parent(pattern);
-  }
-  if (typeof opts.srcBase === 'undefined') {
-    opts.srcBase = opts.cwd;
-  }
+  // if (typeof pattern === 'string') {
+  //   opts.srcBase = parent(pattern);
+  // }
+  // if (typeof opts.srcBase === 'undefined') {
+  //   opts.srcBase = opts.cwd;
+  // }
   return extend(opts, options);
 }
 
