@@ -1,13 +1,33 @@
 'use strict';
 
 var path = require('path');
+var async = require('async');
 var invalid = require('./lib/invalid');
 var utils = require('./lib/utils');
 var base = require('./lib/base');
-var mapDest = require('map-dest');
-var Expand = require('expand-files').Files;
 
-function copy(patterns, dest, opts, cb) {
+function copy(patterns, dest, options, cb) {
+  if (typeof options === 'function') {
+    cb = options;
+    options = {};
+  }
+
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
+
+  var opts = createOptions(patterns, dest, options);
+  var files = utils.expand(patterns, dest, opts);
+
+  async.each(files, function(file, next) {
+    copyEach(file.src, file.dest, opts, next);
+  }, function(err) {
+    if (err) return cb(err);
+    cb(null, files);
+  });
+}
+
+function copyEach(src, dest, opts, cb) {
   if (typeof opts === 'function') {
     cb = opts;
     opts = {};
@@ -17,34 +37,28 @@ function copy(patterns, dest, opts, cb) {
     return invalid.apply(null, arguments);
   }
 
-  var files = expand(patterns, dest, opts);
+  opts = opts || {};
+  src = utils.arrayify(src);
 
-  utils.async.each(files, function (file, next) {
-    base(file.src, file.dest, next);
+  async.each(src, function(fp, next) {
+    base(fp, dest, opts, next);
   }, cb);
-
-  // utils.glob(patterns, opts, function (err, files) {
-  //   utils.async.each(files, function (fp, next) {
-  //     createDest(fp, dest, opts);
-  //     next();
-  //     // base(fp, dest, opts, next);
-  //   }, cb);
-  // });
 }
 
-function createDest(src, dest, opts) {
-  console.log(mapDest(src, dest, opts))
-
-}
-
-function expand(patterns, dest, options) {
-  var opts = utils.extend({}, options, {expand: true});
-  var config = new Expand(opts);
-  config.expand({src: patterns, dest: dest});
-  return config.files.map(function (file) {
-    file.src = file.src[0];
-    return file;
-  });
+function createOptions(patterns, dest, options) {
+  var opts = utils.extend({overwrite: true}, options);
+  opts.srcType = utils.typeOf(patterns);
+  if (utils.hasGlob(patterns)) {
+    opts.isGlob = true;
+    opts.mapDest = true;
+  }
+  if (Array.isArray(patterns)) {
+    opts.mapDest = true;
+  }
+  if (dest.slice(-1) === '/') {
+    opts.mapDest = true;
+  }
+  return opts;
 }
 
 /**

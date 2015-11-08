@@ -23,20 +23,25 @@
   "dependencies": {
     "async": "^1.5.0",
     "bluebird": "^3.0.5",
-    "define-property": "^0.2.5",
-    "delete": "^0.2.1",
+    "expand-files": "^0.6.0",
     "extend-shallow": "^2.0.1",
     "file-contents": "^0.2.4",
     "glob-parent": "^2.0.0",
     "graceful-fs": "^4.1.2",
+    "has-glob": "^0.1.1",
+    "kind-of": "^2.0.1",
     "lazy-cache": "^0.2.4",
     "matched": "^0.3.2",
     "mkdirp": "^0.5.1",
-    "resolve-dir": "^0.1.0",
     "vinyl": "^1.1.0"
   },
   "devDependencies": {
+    "assert-fs": "^0.1.0",
+    "assert-path": "^0.1.0",
+    "delete": "^0.2.1",
     "gulp": "^3.9.0",
+    "look-up": "^0.8.1",
+    "minimist": "^1.2.0",
     "mocha": "*"
   },
   "keywords": [

@@ -37,6 +37,8 @@ describe('recurse.promise', function() {
         assert(Array.isArray(files));
         assert(files.length);
         cb(new Error('expected an error'));
-      }, cb);
+      }, function(err) {
+        cb(); // if we're here, error was handled
+      });
   });
 });

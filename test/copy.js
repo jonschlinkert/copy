@@ -1,15 +1,19 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
+var path = require('path');
 var support = require('./support');
+var assert = require('assert');
+require('assert-path')(assert);
+require('assert-fs')(assert);
 var exists = support.exists;
 var copy = require('..');
 
+
 describe('copy', function() {
-  it.skip('should copy a file', function(cb) {
+  it('should copy a file to a directory', function(cb) {
     var src = 'test/fixtures/a.txt';
-    var dest = 'test/actual/a.txt';
+    var dest = 'test/actual/b/c/';
 
     copy(src, dest, function(err) {
       if (err) return cb(err);
@@ -17,7 +21,17 @@ describe('copy', function() {
     });
   });
 
-  it('should copy a glob of files', function(cb) {
+  it('should copy a file to a file', function(cb) {
+    var src = 'test/fixtures/a.txt';
+    var dest = 'test/actual/b/foo';
+
+    copy(src, dest, function(err) {
+      if (err) return cb(err);
+      exists(dest, cb);
+    });
+  });
+
+  it('should copy a glob of files to a directory', function(cb) {
     var src = 'test/fixtures/*.txt';
     var dest = 'test/actual';
 
@@ -27,13 +41,98 @@ describe('copy', function() {
     });
   });
 
-  it.only('should copy a glob of files from a cwd', function(cb) {
-    var src = '*.txt';
+  it('should copy an array of files to a directory', function(cb) {
+    var src = ['test/fixtures/a.txt', 'test/fixtures/b.txt'];
+    var dest = 'test/actual';
+
+    copy(src, dest, function(err, files) {
+      if (err) return cb(err);
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files from a cwd', function(cb) {
+    var src = ['a.txt', 'b.txt'];
     var dest = 'test/actual';
     var opts = {cwd: 'test/fixtures/'};
 
     copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files to a destBase', function(cb) {
+    var opts = {destBase: 'test'};
+    var src = ['test/fixtures/a.txt', 'test/fixtures/b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar/test/fixtures');
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files using cwd and destBase', function(cb) {
+    var opts = {destBase: 'test', cwd :'test/fixtures'};
+    var src = ['a.txt', 'b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      assert.dirname(files[1].dest, 'test/actual/foo/bar');
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files using cwd and destBase', function(cb) {
+    var opts = {destBase: 'test', cwd :'test/fixtures'};
+    var src = ['a.txt', 'b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      assert.dirname(files[1].dest, 'test/actual/foo/bar');
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files using cwd and destBase', function(cb) {
+    var opts = {destBase: 'test', cwd :'test/fixtures'};
+    var src = ['a.txt', 'b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      assert.dirname(files[1].dest, 'test/actual/foo/bar');
+      exists(files, cb);
+    });
+  });
+
+  it('should flatten the basename of src paths to a destBase', function(cb) {
+    var opts = {destBase: 'test', flatten: true};
+    var src = ['test/fixtures/a.txt', 'test/fixtures/b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      exists(files, cb);
+    });
+  });
+
+  it('should copy an array of files from a cwd to a destBase', function(cb) {
+    var opts = {cwd: 'test/', destBase: 'test', flatten: true};
+    var src = ['fixtures/a.txt', 'fixtures/b.txt'];
+    var dest = 'actual/foo/bar';
+
+    copy(src, dest, opts, function(err, files) {
+      if (err) return cb(err);
+      assert.dirname(files[0].dest, 'test/actual/foo/bar');
       exists(files, cb);
     });
   });
