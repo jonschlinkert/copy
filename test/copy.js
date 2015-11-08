@@ -1,27 +1,10 @@
 'use strict';
 
 require('mocha');
-var fs = require('fs');
-var path = require('path');
-var argv = require('minimist')(process.argv.slice(2), {
-  alias: {debug: 'd'}
-});
 var assert = require('assert');
-var once = require('../lib/once');
+var support = require('./support');
+var exists = support.exists;
 var copy = require('..');
-var del = require('delete');
-
-function exists(fp, cb) {
-  if (argv.debug) return cb();
-
-  fs.exists(fp, function(exists) {
-    if (!exists) {
-      cb(new Error('expected file to exist'));
-    } else {
-      del(path.dirname(fp), cb);
-    }
-  });
-}
 
 describe('copy', function() {
   it.skip('should copy a file', function(cb) {
@@ -38,9 +21,9 @@ describe('copy', function() {
     var src = 'test/fixtures/*.txt';
     var dest = 'test/actual';
 
-    copy(src, dest, function(err) {
+    copy(src, dest, function(err, files) {
       if (err) return cb(err);
-      exists(dest, cb);
+      exists(files, cb);
     });
   });
 
@@ -49,9 +32,9 @@ describe('copy', function() {
     var dest = 'test/actual';
     var opts = {cwd: 'test/fixtures/'};
 
-    copy(src, dest, opts, function(err) {
+    copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
-      exists(dest, cb);
+      exists(files, cb);
     });
   });
 
@@ -61,7 +44,7 @@ describe('copy', function() {
         return cb(new Error('expected an error'));
       }
       assert(err);
-      assert.equal(err.message, 'expected "dest" to be a string')
+      assert.equal(err.message, 'expected "dest" to be a string');
       cb();
     });
   });
@@ -83,7 +66,7 @@ describe('copy', function() {
         return cb(new Error('expected an error'));
       }
       assert(err);
-      assert.equal(err.message, 'expected "src" to be a string')
+      assert.equal(err.message, 'expected "src" to be a string');
       cb();
     });
   });
