@@ -11,7 +11,7 @@
   "license": "MIT",
   "files": [
     "index.js",
-    "recurse.js"
+    "lib/"
   ],
   "main": "index.js",
   "engines": {
@@ -21,18 +21,23 @@
     "test": "mocha"
   },
   "dependencies": {
-    "async": "^1.4.2",
-    "bluebird": "^2.10.0",
+    "async": "^1.5.0",
+    "bluebird": "^3.0.5",
+    "define-property": "^0.2.5",
+    "delete": "^0.2.1",
     "extend-shallow": "^2.0.1",
-    "glob-parent": "^1.2.0",
+    "file-contents": "^0.2.4",
+    "glob-parent": "^2.0.0",
     "graceful-fs": "^4.1.2",
-    "lazy-globby": "^0.1.1",
-    "mkdirp": "^0.5.1"
+    "lazy-cache": "^0.2.4",
+    "matched": "^0.3.2",
+    "mkdirp": "^0.5.1",
+    "resolve-dir": "^0.1.0",
+    "vinyl": "^1.1.0"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
-    "mocha": "*",
-    "should": "*"
+    "mocha": "*"
   },
   "keywords": [
     "async",
