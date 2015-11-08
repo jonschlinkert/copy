@@ -1,38 +1,50 @@
 'use strict';
 
 var path = require('path');
+var invalid = require('./lib/invalid');
 var utils = require('./lib/utils');
 var base = require('./lib/base');
+var mapDest = require('map-dest');
+var Expand = require('expand-files').Files;
 
-function copy(pattern, dest, options, cb) {
-  if (typeof options === 'function') {
-    cb = options;
-    options = {};
+function copy(patterns, dest, opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts;
+    opts = {};
   }
 
-  var isValid = validate(pattern, dest, cb);
-  if (!isValid) return;
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
 
-  cb()
+  var files = expand(patterns, dest, opts);
+
+  utils.async.each(files, function (file, next) {
+    base(file.src, file.dest, next);
+  }, cb);
+
+  // utils.glob(patterns, opts, function (err, files) {
+  //   utils.async.each(files, function (fp, next) {
+  //     createDest(fp, dest, opts);
+  //     next();
+  //     // base(fp, dest, opts, next);
+  //   }, cb);
+  // });
 }
 
-function validate(src, dest, cb) {
-  // get the callback so we can give the correct errors
-  // when src or dest is missing
-  if (typeof dest === 'function') cb = dest;
-  if (typeof src === 'function') cb = src;
+function createDest(src, dest, opts) {
+  console.log(mapDest(src, dest, opts))
 
-  if (typeof cb !== 'function') {
-    throw new TypeError('expected callback to be a function');
-  }
+}
 
-  if (typeof src !== 'string') {
-    return cb(new TypeError('expected "src" to be a string'));
-  }
-  if (typeof dest !== 'string') {
-    return cb(new TypeError('expected "dest" to be a string'));
-  }
-  return true;
+function expand(patterns, dest, options) {
+  var opts = utils.extend({}, options, {expand: true});
+  var config = new Expand(opts);
+  config.expand({src: patterns, dest: dest});
+  return config.files.map(function (file) {
+    file.src = file.src[0];
+    return file;
+  });
 }
 
 /**
