@@ -38,7 +38,7 @@ describe('recurse.promise', function() {
         assert(files.length);
         cb(new Error('expected an error'));
       }, function(err) {
-        cb(); // if we're here, error was handled
+        cb(); // if we're here, error was handled correctly
       });
   });
 });
