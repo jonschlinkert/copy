@@ -1,25 +1,13 @@
-# copy [![NPM version](https://img.shields.io/npm/v/copy.svg)](https://www.npmjs.com/package/copy)
+# copy [![NPM version](https://img.shields.io/npm/v/copy.svg)](https://www.npmjs.com/package/copy) [![Build Status](https://img.shields.io/travis/jonschlinkert/copy.svg)](https://travis-ci.org/jonschlinkert/copy)
 
 > Copy files or directories using globs.
 
-**TODO**
-
-- [x] sync
-- [x] async
-- [x] dir
-- [x] dir sync
-- [x] one file
-- [x] one file sync
-- [ ] promise
-- [ ] stream
-- [ ] docs
-- [ ] tests
-
 ## Install
-Install with [npm](https://www.npmjs.com/)
+
+Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm i copy --save
+$ npm install copy --save
 ```
 
 ## Usage
@@ -30,7 +18,7 @@ var copy = require('copy');
 
 ## Examples
 
-**Usage with [gulp]**
+**Usage with [gulp](http://gulpjs.com)**
 
 In your project's gulpfile.js:
 
@@ -45,35 +33,111 @@ gulp.task('default', function (cb) {
 
 ## API
 
+### [copy](index.js#L29)
+
+Copy a filepath, vinyl file, array of files, or glob of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
+
+**Params**
+
+* `patterns` **{String|Object|Array}**: Filepath(s), vinyl file(s) or glob of files.
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
+
+**Example**
+
+```js
+copy('*.js', 'dist', function(err, file) {
+  // exposes the vinyl `file` created when the file is copied
+});
+```
+
+### [.copy.each](index.js#L77)
+
+Copy an array of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
+
+**Params**
+
+* `files` **{Array}**: Filepaths or vinyl files.
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
+
+**Example**
+
+```js
+copy.each(['foo.txt', 'bar.txt', 'baz.txt'], 'dist', function(err, files) {
+  // exposes the vinyl `files` created when the files are copied
+});
+```
+
+### [.copy.one](index.js#L123)
+
+Copy a single `file` to the given `dest` directory, using the specified options and callback function.
+
+**Params**
+
+* `file` **{String|Object}**: Filepath or vinyl file
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
+
+**Example**
+
+```js
+copy.one('foo.txt', 'dist', function(err, file) {
+  if (err) throw err;
+  // exposes the vinyl `file` that is created when the file is copied
+});
+```
 
 ## Related projects
+
 * [expand-config](https://www.npmjs.com/package/expand-config): Expand tasks, targets and files in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-config)
 * [expand-files](https://www.npmjs.com/package/expand-files): Expand glob patterns in a declarative configuration into src-dest mappings. | [homepage](https://github.com/jonschlinkert/expand-files)
 * [expand-target](https://www.npmjs.com/package/expand-target): Expand target definitions in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-target)
 * [expand-task](https://www.npmjs.com/package/expand-task): Expand and normalize task definitions in a declarative configuration. | [homepage](https://github.com/jonschlinkert/expand-task)
 * [export-files](https://www.npmjs.com/package/export-files): node.js utility for exporting a directory of files as modules. | [homepage](https://github.com/jonschlinkert/export-files)
-* [write](https://www.npmjs.com/package/write): Write files to disk, creating intermediate directories if they don't exist. | [homepage](https://github.com/jonschlinkert/write)  
+* [write](https://www.npmjs.com/package/write): Write files to disk, creating intermediate directories if they don't exist. | [homepage](https://github.com/jonschlinkert/write)
+
+## Contributing
+
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/copy/issues/new).
+
+## Building docs
+
+Generate readme and API documentation with [verb](https://github.com/verbose/verb):
+
+```sh
+$ npm install verb && npm run docs
+```
+
+Or, if [verb](https://github.com/verbose/verb) is installed globally:
+
+```sh
+$ verb
+```
 
 ## Running tests
+
 Install dev dependencies:
 
 ```sh
-$ npm i -d && npm test
+$ npm install -d && npm test
 ```
 
-## Contributing
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/copy/issues/new).
-
 ## Author
+
 **Jon Schlinkert**
 
-+ [github/jonschlinkert](https://github.com/jonschlinkert)
-+ [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
+* [github/jonschlinkert](https://github.com/jonschlinkert)
+* [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
 
 ## License
-Copyright © 2015 [Jon Schlinkert](https://github.com/jonschlinkert)
-Released under the MIT license.
+
+Copyright © 2016 [Jon Schlinkert](https://github.com/jonschlinkert)
+Released under the [MIT license](https://github.com/jonschlinkert/copy/blob/master/LICENSE).
 
 ***
 
-_This file was generated by [verb](https://github.com/verbose/verb) on December 08, 2015._
+_This file was generated by [verb](https://github.com/verbose/verb), v0.9.0, on March 21, 2016._
