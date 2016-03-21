@@ -9,7 +9,6 @@ require('assert-fs')(assert);
 var exists = support.exists;
 var copy = require('..');
 
-
 describe('copy', function() {
   it('should copy a file to a directory', function(cb) {
     var src = 'test/fixtures/a.txt';
@@ -18,6 +17,16 @@ describe('copy', function() {
     copy(src, dest, function(err) {
       if (err) return cb(err);
       exists(dest, cb);
+    });
+  });
+
+  it('should flatten the filepath and join src basename to dest path', function(cb) {
+    var src = 'test/fixtures/a.txt';
+    var dest = 'test/actual/b/c/';
+
+    copy(src, dest, {flatten: true}, function(err) {
+      if (err) return cb(err);
+      exists(path.resolve(dest, 'a.txt'), cb);
     });
   });
 
@@ -69,7 +78,7 @@ describe('copy', function() {
 
     copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar/test/fixtures');
+      assert.dirname(files[0].dest, path.resolve('test/actual/foo/bar/test/fixtures'));
       exists(files, cb);
     });
   });
@@ -81,34 +90,8 @@ describe('copy', function() {
 
     copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar');
-      assert.dirname(files[1].dest, 'test/actual/foo/bar');
-      exists(files, cb);
-    });
-  });
-
-  it('should copy an array of files using cwd and destBase', function(cb) {
-    var opts = {destBase: 'test', cwd :'test/fixtures'};
-    var src = ['a.txt', 'b.txt'];
-    var dest = 'actual/foo/bar';
-
-    copy(src, dest, opts, function(err, files) {
-      if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar');
-      assert.dirname(files[1].dest, 'test/actual/foo/bar');
-      exists(files, cb);
-    });
-  });
-
-  it('should copy an array of files using cwd and destBase', function(cb) {
-    var opts = {destBase: 'test', cwd :'test/fixtures'};
-    var src = ['a.txt', 'b.txt'];
-    var dest = 'actual/foo/bar';
-
-    copy(src, dest, opts, function(err, files) {
-      if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar');
-      assert.dirname(files[1].dest, 'test/actual/foo/bar');
+      assert.dirname(files[0].dest, path.resolve('test/actual/foo/bar'));
+      assert.dirname(files[1].dest, path.resolve('test/actual/foo/bar'));
       exists(files, cb);
     });
   });
@@ -120,7 +103,7 @@ describe('copy', function() {
 
     copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      assert.dirname(files[0].dest, path.resolve('test/actual/foo/bar'));
       exists(files, cb);
     });
   });
@@ -132,7 +115,7 @@ describe('copy', function() {
 
     copy(src, dest, opts, function(err, files) {
       if (err) return cb(err);
-      assert.dirname(files[0].dest, 'test/actual/foo/bar');
+      assert.dirname(files[0].dest, path.resolve('test/actual/foo/bar'));
       exists(files, cb);
     });
   });

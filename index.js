@@ -2,11 +2,13 @@
 
 var path = require('path');
 var async = require('async');
+var toDest = require('./lib/dest');
 var invalid = require('./lib/invalid');
+var recurse = require('./lib/recurse');
 var utils = require('./lib/utils');
 var base = require('./lib/base');
 
-function copy(patterns, dest, options, cb) {
+function copy(patterns, dir, options, cb) {
   if (typeof options === 'function') {
     cb = options;
     options = {};
@@ -16,38 +18,85 @@ function copy(patterns, dest, options, cb) {
     return invalid.apply(null, arguments);
   }
 
-  var opts = createOptions(patterns, dest, options);
-  var files = utils.expand(patterns, dest, opts);
+  var opts = utils.extend({cwd: process.cwd()}, options);
+  opts.cwd = path.resolve(opts.cwd);
+  patterns = utils.arrayify(patterns);
 
-  async.each(files, function(file, next) {
-    copyEach(file.src, file.dest, opts, next);
-  }, function(err) {
+  if (!utils.hasGlob(patterns)) {
+    opts.isGlob = false;
+    copyEach(patterns, dir, opts, cb);
+    return;
+  }
+
+  if (!opts.srcBase) {
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(patterns));
+    opts.base = path.relative(opts.cwd, opts.srcBase);
+  }
+
+  utils.glob(patterns, opts, function(err, files) {
     if (err) return cb(err);
-    cb(null, files);
+    copyEach(files, dir, opts, cb);
   });
 }
 
-function copyEach(src, dest, opts, cb) {
-  if (typeof opts === 'function') {
-    cb = opts;
-    opts = {};
+function copyEach(files, dir, options, cb) {
+  async.reduce(files, [], function(acc, filepath, next) {
+    if (options.isGlob === false) {
+      filepath = path.resolve(options.cwd, filepath);
+    }
+    copyOne(filepath, dir, options, function(err, file) {
+      if (err) return next(err);
+      next(null, acc.concat(file));
+    });
+  }, cb);
+}
+
+function copyOne(fp, dir, options, cb) {
+  if (typeof options === 'function') {
+    cb = options;
+    options = {};
   }
 
   if (arguments.length < 3) {
     return invalid.apply(null, arguments);
   }
 
-  opts = opts || {};
-  src = utils.arrayify(src);
-
-  async.each(src, function(fp, next) {
-    base(fp, dest, opts, next);
-  }, cb);
+  toDest(dir, fp, options, function(err, file) {
+    base(fp, file.path, options, function(err) {
+      if (err) return cb(err);
+      cb(null, file);
+    });
+  });
 }
+
+function mapDest(file, dest, options) {
+  var opts = utils.extend({}, options);
+  var base = opts.srcBase || utils.parent(opts.patterns);
+
+  // if (utils.hasGlob(patterns)) {
+  //   opts.isGlob = true;
+  //   opts.mapDest = true;
+  // }
+  // if (Array.isArray(patterns)) {
+  //   opts.mapDest = true;
+  // }
+  // if (dest.slice(-1) === '/') {
+  //   opts.mapDest = true;
+  // }
+}
+
+/**
+ * Normalize options and ensure that destination directory
+ * and file paths will result in what the user expects.
+ *
+ * @param {String|Array} `patterns` Glob pattern(s) or file path(s)
+ * @param {String} `dest` Desination directory for copied files
+ * @param {Object} `options`
+ * @return {Object}
+ */
 
 function createOptions(patterns, dest, options) {
   var opts = utils.extend({overwrite: true}, options);
-  opts.srcType = utils.typeOf(patterns);
   if (utils.hasGlob(patterns)) {
     opts.isGlob = true;
     opts.mapDest = true;
@@ -66,3 +115,4 @@ function createOptions(patterns, dest, options) {
  */
 
 module.exports = copy;
+module.exports.one = copyOne;

@@ -1,7 +1,10 @@
-var copy = require('..');
+'use strict';
 
-copy('fixtures/*.txt', 'actual/nested/nested-deeper', function (err) {
-  if (err) {
-    console.error(err);
-  }
+var copy = require('..');
+var dest = 'test/actual/blah/foo';
+var opts = {cwd: 'test/fixtures'};
+
+copy('*.txt', dest, opts, function(err) {
+  if (err) return console.error(err);
+  console.log('done!');
 });
