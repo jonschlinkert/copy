@@ -121,17 +121,29 @@ function copyEach(files, dir, options, cb) {
  */
 
 function copyOne(file, dir, options, cb) {
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
+
   if (typeof options === 'function') {
     cb = options;
     options = {};
   }
 
-  if (arguments.length < 3) {
-    return invalid.apply(null, arguments);
+  var opts = utils.extend({}, options);
+  if (typeof opts.cwd === 'undefined') {
+    opts.cwd = process.cwd();
+  }
+  if (typeof file === 'string') {
+    file = path.resolve(opts.cwd, file);
   }
 
-  toDest(dir, file, options, function(err, out) {
-    base(file, out.path, options, function(err) {
+  if (!opts.srcBase && opts.patterns) {
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(patterns));
+  }
+
+  toDest(dir, file, opts, function(err, out) {
+    base(file, out.path, opts, function(err) {
       if (err) return cb(err);
       cb(null, out);
     });
