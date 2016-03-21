@@ -10,6 +10,10 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install copy --save
 ```
 
+## breaking changes in v0.2.0!
+
+The API has been simplified. Please review the API documentation below to see the new API.
+
 ## Usage
 
 ```js
@@ -33,7 +37,7 @@ gulp.task('default', function (cb) {
 
 ## API
 
-### [copy](index.js#L29)
+### [copy](index.js#L28)
 
 Copy a filepath, vinyl file, array of files, or glob of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
 
@@ -52,7 +56,7 @@ copy('*.js', 'dist', function(err, file) {
 });
 ```
 
-### [.copy.each](index.js#L77)
+### [.copy.each](index.js#L76)
 
 Copy an array of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
 
@@ -71,7 +75,7 @@ copy.each(['foo.txt', 'bar.txt', 'baz.txt'], 'dist', function(err, files) {
 });
 ```
 
-### [.copy.one](index.js#L123)
+### [.copy.one](index.js#L122)
 
 Copy a single `file` to the given `dest` directory, using the specified options and callback function.
 
