@@ -4,7 +4,6 @@ var path = require('path');
 var async = require('async');
 var toDest = require('./lib/dest');
 var invalid = require('./lib/invalid');
-var recurse = require('./lib/recurse');
 var utils = require('./lib/utils');
 var base = require('./lib/base');
 
@@ -90,7 +89,7 @@ function copyEach(files, dir, options, cb) {
   }
 
   if (!opts.srcBase && opts.patterns) {
-    opts.srcBase = path.resolve(opts.cwd, utils.parent(patterns));
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(opts.patterns));
   }
 
   async.reduce(files, [], function(acc, filepath, next) {
@@ -139,10 +138,12 @@ function copyOne(file, dir, options, cb) {
   }
 
   if (!opts.srcBase && opts.patterns) {
-    opts.srcBase = path.resolve(opts.cwd, utils.parent(patterns));
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(opts.patterns));
   }
 
   toDest(dir, file, opts, function(err, out) {
+    if (err) return cb(err);
+
     base(file, out.path, opts, function(err) {
       if (err) return cb(err);
       cb(null, out);
