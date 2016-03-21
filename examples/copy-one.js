@@ -1,9 +1,13 @@
 'use strict';
 
+var path = require('path');
 var copy = require('..');
-var opts = {srcBase: 'test/fixtures'};
+var opts = {
+  cwd: path.resolve(__dirname, '../test'),
+  flatten: true
+};
 
-copy.one('test/fixtures/a.txt', 'actual', opts, function(err) {
-  if (err) return console.error(err);
-
+copy.one('fixtures/a.txt', 'actual', opts, function(err) {
+  if (err) throw err;
+  console.log('done!');
 });
