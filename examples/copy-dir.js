@@ -1,7 +1,7 @@
-var copy = require('..');
+var copyDir = require('..').dir;
 
-copy.dir('fixtures', 'actual', function (err) {
-  if (err) {
-    console.error(err);
-  }
+// not implemented yet
+copyDir('test', 'actual', function (err) {
+  if (err) return console.error(err);
+  console.log('done!');
 });

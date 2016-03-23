@@ -1,211 +1,154 @@
 'use strict';
 
-var fs = require('graceful-fs');
 var path = require('path');
 var async = require('async');
-var glob = require('lazy-globby');
-var extend = require('extend-shallow');
-var parent = require('glob-parent');
-var mkdir = require('mkdirp');
-var recurse = require('./recurse');
+var toDest = require('./lib/dest');
+var invalid = require('./lib/invalid');
+var utils = require('./lib/utils');
+var base = require('./lib/base');
 
 /**
- * Asynchronously copy a glob of files from `a` to `b`.
+ * Copy a filepath, vinyl file, array of files, or glob of files to the
+ * given destination `directory`, with `options` and callback function that
+ * exposes `err` and the array of vinyl files that are created by the copy
+ * operation.
  *
- * @param  {String|Array} `patterns` Glob pattern or array of glob patterns.
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp] or [globby]. You may also pass a custom [rewrite] function on the options.
- * @param  {Function} `cb` Callback
- *   @param {Object} `err` [cb] Error object
- *   @param {Array} `files` [cb] Array of files
+ * ```js
+ * copy('*.js', 'dist', function(err, file) {
+ *   // exposes the vinyl `file` created when the file is copied
+ * });
+ * ```
+ * @param {String|Object|Array} `patterns` Filepath(s), vinyl file(s) or glob of files.
+ * @param {String} `dir` Destination directory
+ * @param {Object|Function} `options` or callback function
+ * @param {Function} `cb` Callback function if no options are specified
  * @api public
  */
 
-function copy(patterns, dest, options, cb) {
+function copy(patterns, dir, options, cb) {
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
+
   if (typeof options === 'function') {
     cb = options;
     options = {};
   }
 
-  var opts = defaults(patterns, dest, options);
+  var opts = utils.extend({cwd: process.cwd()}, options);
+  opts.cwd = path.resolve(opts.cwd);
+  patterns = utils.arrayify(patterns);
 
-  glob()(patterns, opts, function (err, files) {
-    async.each(files, function (fp, next) {
-      copy.one(fp, dest, opts, next);
-    }, cb);
+  if (!utils.hasGlob(patterns)) {
+    copyEach(patterns, dir, opts, cb);
+    return;
+  }
+
+  opts.patterns = patterns;
+  if (!opts.srcBase) {
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(patterns));
+  }
+
+  utils.glob(patterns, opts, function(err, files) {
+    if (err) return cb(err);
+    copyEach(files, dir, opts, cb);
   });
 }
 
 /**
- * Synchronously copy a glob of files from `a` to `b`.
+ * Copy an array of files to the given destination `directory`, with
+ * `options` and callback function that exposes `err` and the array of
+ * vinyl files that are created by the copy operation.
  *
- * @param  {String|Array} `patterns` Glob pattern or array of glob patterns.
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp] or [globby]. You may also pass a custom [rewrite] function on the options.
+ * ```js
+ * copy.each(['foo.txt', 'bar.txt', 'baz.txt'], 'dist', function(err, files) {
+ *   // exposes the vinyl `files` created when the files are copied
+ * });
+ * ```
+ * @name .copy.each
+ * @param {Array} `files` Filepaths or vinyl files.
+ * @param {String} `dir` Destination directory
+ * @param {Object|Function} `options` or callback function
+ * @param {Function} `cb` Callback function if no options are specified
  * @api public
  */
 
-copy.sync = function copySync(patterns, dest, options) {
-  var opts = defaults(patterns, dest, options);
+function copyEach(files, dir, options, cb) {
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
 
-  glob().sync(patterns, opts).forEach(function (fp) {
-    try {
-      copy.oneSync(fp, dest, opts);
-    } catch (err) {
-      throw new Error(err);
-    }
-  });
-};
-
-/**
- * Asynchronously and recursively copy all files in directory `a` to `b`.
- *
- * @param  {String} `dirname` Source directory
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
- * @param  {Function} `cb` Callback
- *   @param {Object} `err` [cb] Error object
- *   @param {Array} `files` [cb] Array of files
- * @api public
- */
-
-copy.dir = function copyDir(dirname, dest, options, cb) {
   if (typeof options === 'function') {
     cb = options;
     options = {};
   }
 
-  var opts = defaults(dirname, dest, options);
+  var opts = utils.extend({}, options);
+  if (typeof opts.cwd === 'undefined') {
+    opts.cwd = process.cwd();
+  }
 
-  recurse(dirname, function (err, files) {
-    async.each(files, function (fp, next) {
-      copy.one(fp, dest, opts, next);
-    }, cb);
-  });
-};
+  if (!opts.srcBase && opts.patterns) {
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(opts.patterns));
+  }
+
+  async.reduce(files, [], function(acc, filepath, next) {
+    filepath = path.resolve(opts.cwd, filepath);
+    copyOne(filepath, dir, opts, function(err, file) {
+      if (err) return next(err);
+      next(null, acc.concat(file));
+    });
+  }, cb);
+}
 
 /**
- * Synchronously and recursively copy all files in directory `a` to `b`.
+ * Copy a single `file` to the given `dest` directory, using
+ * the specified options and callback function.
  *
- * @param  {String} `dirname` Source directory
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
+ * ```js
+ * copy.one('foo.txt', 'dist', function(err, file) {
+ *   if (err) throw err;
+ *   // exposes the vinyl `file` that is created when the file is copied
+ * });
+ * ```
+ * @name .copy.one
+ * @param {String|Object} `file` Filepath or vinyl file
+ * @param {String} `dir` Destination directory
+ * @param {Object|Function} `options` or callback function
+ * @param {Function} `cb` Callback function if no options are specified
  * @api public
  */
 
-copy.dirSync = function copyDirSync(dirname, dest, options) {
-  var opts = defaults(dirname, dest, options);
-  recurse.sync(dirname).forEach(function (fp) {
-    copy.oneSync(fp, dest, opts);
-  });
-};
+function copyOne(file, dir, options, cb) {
+  if (arguments.length < 3) {
+    return invalid.apply(null, arguments);
+  }
 
-/**
- * Asynchronously copy a single file from `a` to `b`. A thin wrapper around the `copy.base`
- * method, to provide error reporting and to create directories when they
- * don't already exist.
- *
- * @param  {String} `fp` Source file path
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
- * @param  {Function} `cb` Callback
- *   @param {Object} `err` [cb] Error object
- *   @param {Array} `files` [cb] Array of files
- * @api public
- */
-
-copy.one = function copyOne(fp, dest, options, cb) {
   if (typeof options === 'function') {
     cb = options;
     options = {};
   }
 
-  var opts = defaults(fp, dest, options);
-  var destFile = opts.rewrite(fp, dest);
-  mkdir(path.dirname(destFile), opts, function (err) {
+  var opts = utils.extend({}, options);
+  if (typeof opts.cwd === 'undefined') {
+    opts.cwd = process.cwd();
+  }
+  if (typeof file === 'string') {
+    file = path.resolve(opts.cwd, file);
+  }
+
+  if (!opts.srcBase && opts.patterns) {
+    opts.srcBase = path.resolve(opts.cwd, utils.parent(opts.patterns));
+  }
+
+  toDest(dir, file, opts, function(err, out) {
     if (err) return cb(err);
 
-    try {
-      copy.base(fp, destFile, opts);
-      return cb();
-    } catch(err) {
-      return cb(err);
-    }
+    base(file, out.path, opts, function(err) {
+      if (err) return cb(err);
+      cb(null, out);
+    });
   });
-};
-
-/**
- * Synchronously copy a single file from `a` to `b`. A thin wrapper around the `copy.base`
- * method, to provide error reporting and to create directories when they
- * don't already exist.
- *
- * @param  {String} `fp` Source file path
- * @param  {String} `dest` Destination directory
- * @param  {Object} `options` Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
- * @api public
- */
-
-copy.oneSync = function copyOneSync(fp, dest, options) {
-  var opts = defaults(fp, dest, options);
-  var destFile = opts.rewrite(fp, dest);
-  try {
-    mkdir.sync(path.dirname(destFile), opts);
-    copy.base(fp, destFile, opts);
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-
-/**
- * Base function for copying files.
- *
- * @param  {String} `src` Source file path
- * @param  {String} `dest` Destination directory
- * @return {String}
- * @api public
- */
-
-copy.base = function copyBase(src, dest, opts) {
-  src = path.resolve(opts.cwd, src);
-  fs.createReadStream(src).pipe(fs.createWriteStream(dest));
-};
-
-/**
- * Rewrite the destination file path.
- *
- * @param  {String} `fp`
- * @param  {String} `dest`
- * @return {String}
- */
-
-function rewrite(fp, dest, options) {
-  return path.resolve(dest, path.basename(fp));
-}
-
-/**
- * Set default options
- *
- * @param  {Object} options
- * @return {Object}
- */
-
-function defaults(pattern, dest, options) {
-  var opts = {};
-  opts.cwd = process.cwd();
-  opts.rewrite = function (fp, dest) {
-    return rewrite(fp, dest, this);
-  };
-  if (typeof pattern === 'string') {
-    opts.srcBase = parent(pattern);
-  }
-  if (typeof opts.srcBase === 'undefined') {
-    opts.srcBase = opts.cwd;
-  }
-  return extend(opts, options);
-}
-
-function unixify(fp) {
-  return fp.split(/[\\\/]+/).join('/');
 }
 
 /**
@@ -213,3 +156,5 @@ function unixify(fp) {
  */
 
 module.exports = copy;
+module.exports.one = copyOne;
+module.exports.each = copyEach;

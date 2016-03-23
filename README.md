@@ -1,27 +1,18 @@
-# copy [![NPM version](https://badge.fury.io/js/copy.svg)](http://badge.fury.io/js/copy)
+# copy [![NPM version](https://img.shields.io/npm/v/copy.svg)](https://www.npmjs.com/package/copy) [![Build Status](https://img.shields.io/travis/jonschlinkert/copy.svg)](https://travis-ci.org/jonschlinkert/copy)
 
 > Copy files or directories using globs.
 
-**TODO**
-
-* [x] sync
-* [x] async
-* [x] dir
-* [x] dir sync
-* [x] one file
-* [x] one file sync
-* [ ] promise
-* [ ] stream
-* [ ] docs
-* [ ] tests
-
 ## Install
 
-Install with [npm](https://www.npmjs.com/)
+Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm i copy --save
+$ npm install copy --save
 ```
+
+## breaking changes in v0.2.0!
+
+The API has been simplified. Please review the API documentation below to see the new API.
 
 ## Usage
 
@@ -31,7 +22,7 @@ var copy = require('copy');
 
 ## Examples
 
-**Usage with [gulp]**
+**Usage with [gulp](http://gulpjs.com)**
 
 In your project's gulpfile.js:
 
@@ -46,88 +37,63 @@ gulp.task('default', function (cb) {
 
 ## API
 
-### [copy](index.js#L24)
+### [copy](index.js#L28)
 
-Asynchronously copy a glob of files from `a` to `b`.
-
-**Params**
-
-* `patterns` **{String|Array}**: Glob pattern or array of glob patterns.
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp] or [globby]. You may also pass a custom [rewrite] function on the options.
-* `cb` **{Function}**: Callback
-* `err` **{Object}**: [cb] Error object
-* `files` **{Array}**: [cb] Array of files
-
-### [.sync](index.js#L48)
-
-Synchronously copy a glob of files from `a` to `b`.
+Copy a filepath, vinyl file, array of files, or glob of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
 
 **Params**
 
-* `patterns` **{String|Array}**: Glob pattern or array of glob patterns.
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp] or [globby]. You may also pass a custom [rewrite] function on the options.
+* `patterns` **{String|Object|Array}**: Filepath(s), vinyl file(s) or glob of files.
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
 
-### [.dir](index.js#L72)
+**Example**
 
-Asynchronously and recursively copy all files in directory `a` to `b`.
+```js
+copy('*.js', 'dist', function(err, file) {
+  // exposes the vinyl `file` created when the file is copied
+});
+```
 
-**Params**
+### [.copy.each](index.js#L76)
 
-* `dirname` **{String}**: Source directory
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
-* `cb` **{Function}**: Callback
-* `err` **{Object}**: [cb] Error object
-* `files` **{Array}**: [cb] Array of files
-
-### [.dirSync](index.js#L96)
-
-Synchronously and recursively copy all files in directory `a` to `b`.
+Copy an array of files to the given destination `directory`, with `options` and callback function that exposes `err` and the array of vinyl files that are created by the copy operation.
 
 **Params**
 
-* `dirname` **{String}**: Source directory
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
+* `files` **{Array}**: Filepaths or vinyl files.
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
 
-### [.one](index.js#L117)
+**Example**
 
-Asynchronously copy a single file from `a` to `b`. A thin wrapper around the `copy.base`
-method, to provide error reporting and to create directories when they
-don't already exist.
+```js
+copy.each(['foo.txt', 'bar.txt', 'baz.txt'], 'dist', function(err, files) {
+  // exposes the vinyl `files` created when the files are copied
+});
+```
 
-**Params**
+### [.copy.one](index.js#L122)
 
-* `fp` **{String}**: Source file path
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
-* `cb` **{Function}**: Callback
-* `err` **{Object}**: [cb] Error object
-* `files` **{Array}**: [cb] Array of files
-
-### [.oneSync](index.js#L148)
-
-Synchronously copy a single file from `a` to `b`. A thin wrapper around the `copy.base`
-method, to provide error reporting and to create directories when they
-don't already exist.
+Copy a single `file` to the given `dest` directory, using the specified options and callback function.
 
 **Params**
 
-* `fp` **{String}**: Source file path
-* `dest` **{String}**: Destination directory
-* `options` **{Object}**: Options for [mkdirp]. You may also pass a custom [rewrite] function on the options.
+* `file` **{String|Object}**: Filepath or vinyl file
+* `dir` **{String}**: Destination directory
+* `options` **{Object|Function}**: or callback function
+* `cb` **{Function}**: Callback function if no options are specified
 
-### [.base](index.js#L168)
+**Example**
 
-Base function for copying files.
-
-**Params**
-
-* `src` **{String}**: Source file path
-* `dest` **{String}**: Destination directory
-* `returns` **{String}**
+```js
+copy.one('foo.txt', 'dist', function(err, file) {
+  if (err) throw err;
+  // exposes the vinyl `file` that is created when the file is copied
+});
+```
 
 ## Related projects
 
@@ -138,30 +104,44 @@ Base function for copying files.
 * [export-files](https://www.npmjs.com/package/export-files): node.js utility for exporting a directory of files as modules. | [homepage](https://github.com/jonschlinkert/export-files)
 * [write](https://www.npmjs.com/package/write): Write files to disk, creating intermediate directories if they don't exist. | [homepage](https://github.com/jonschlinkert/write)
 
+## Contributing
+
+Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/copy/issues/new).
+
+## Building docs
+
+Generate readme and API documentation with [verb](https://github.com/verbose/verb):
+
+```sh
+$ npm install verb && npm run docs
+```
+
+Or, if [verb](https://github.com/verbose/verb) is installed globally:
+
+```sh
+$ verb
+```
+
 ## Running tests
 
 Install dev dependencies:
 
 ```sh
-$ npm i -d && npm test
+$ npm install -d && npm test
 ```
-
-## Contributing
-
-Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/copy/issues/new).
 
 ## Author
 
 **Jon Schlinkert**
 
-+ [github/jonschlinkert](https://github.com/jonschlinkert)
-+ [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
+* [github/jonschlinkert](https://github.com/jonschlinkert)
+* [twitter/jonschlinkert](http://twitter.com/jonschlinkert)
 
 ## License
 
-Copyright © 2015 Jon Schlinkert
-Released under the MIT license.
+Copyright © 2016 [Jon Schlinkert](https://github.com/jonschlinkert)
+Released under the [MIT license](https://github.com/jonschlinkert/copy/blob/master/LICENSE).
 
 ***
 
-_This file was generated by [verb-cli](https://github.com/assemble/verb-cli) on September 14, 2015._
+_This file was generated by [verb](https://github.com/verbose/verb), v0.9.0, on March 21, 2016._
