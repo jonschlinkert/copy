@@ -13,6 +13,9 @@
     "index.js",
     "lib/"
   ],
+  "bin": {
+    "copy": "lib/cli.js"
+  },
   "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
