@@ -1,7 +1,6 @@
 'use strict';
 
 var path = require('path');
-var async = require('async');
 var toDest = require('./lib/dest');
 var invalid = require('./lib/invalid');
 var utils = require('./lib/utils');
@@ -50,7 +49,11 @@ function copy(patterns, dir, options, cb) {
   }
 
   utils.glob(patterns, opts, function(err, files) {
-    if (err) return cb(err);
+    if (err) {
+      cb(err);
+      return;
+    }
+
     copyEach(files, dir, opts, cb);
   });
 }
@@ -92,12 +95,9 @@ function copyEach(files, dir, options, cb) {
     opts.srcBase = path.resolve(opts.cwd, utils.parent(opts.patterns));
   }
 
-  async.reduce(files, [], function(acc, filepath, next) {
-    filepath = path.resolve(opts.cwd, filepath);
-    copyOne(filepath, dir, opts, function(err, file) {
-      if (err) return next(err);
-      next(null, acc.concat(file));
-    });
+  utils.each(files, function(filename, next) {
+    var filepath = path.resolve(opts.cwd, filename);
+    copyOne(filepath, dir, opts, next);
   }, cb);
 }
 
@@ -142,10 +142,17 @@ function copyOne(file, dir, options, cb) {
   }
 
   toDest(dir, file, opts, function(err, out) {
-    if (err) return cb(err);
+    if (err) {
+      cb(err);
+      return;
+    }
 
     base(file, out.path, opts, function(err) {
-      if (err) return cb(err);
+      if (err) {
+        cb(err);
+        return;
+      }
+
       cb(null, out);
     });
   });
