@@ -10,12 +10,13 @@
   },
   "license": "MIT",
   "files": [
+    "bin",
     "index.js",
     "lib"
   ],
   "main": "index.js",
   "bin": {
-    "copy": "lib/cli.js"
+    "copy": "bin/cli.js"
   },
   "engines": {
     "node": ">=0.10.0"
