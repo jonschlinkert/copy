@@ -3,7 +3,7 @@
 var argv = require('minimist')(process.argv.slice(2));
 var fs = require('fs');
 var path = require('path');
-var async = require('async');
+var each = require('async-each');
 var lookup = require('look-up');
 var assert = require('assert');
 require('assert-fs')(assert);
@@ -34,7 +34,7 @@ exports.eachExists = function(files, cb) {
   if (argv.n) return cb();
   files = utils.arrayify(files);
 
-  async.each(files, function (file, next) {
+  each(files, function (file, next) {
     assert.exists(file.dest, function(err) {
       if (err) return next(err);
       next();

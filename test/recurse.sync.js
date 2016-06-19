@@ -19,6 +19,10 @@ describe('recurse.sync', function() {
 
   it('should read contents from files as a buffer', function() {
     var files = recurse.sync('test/fixtures');
-    assert(Buffer.isBuffer(files[0].contents));
+    files.forEach(function(file) {
+      if (file.stat && file.stat.isFile()) {
+        assert(Buffer.isBuffer(file.contents));
+      }
+    });
   });
 });

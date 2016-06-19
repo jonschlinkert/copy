@@ -17,6 +17,16 @@ function exists(fp, cb) {
 }
 
 describe('copy.one', function() {
+  it('should copy a file from an absolute path to an absolute path', function(cb) {
+    var src = path.resolve('test/fixtures/a.txt');
+    var dest = path.resolve('test/actual/a.txt');
+
+    copy.one(src, dest, function(err) {
+      if (err) return cb(err);
+      exists(dest, cb);
+    });
+  });
+
   it('should copy a file', function(cb) {
     var src = 'test/fixtures/a.txt';
     var dest = 'test/actual/a.txt';

@@ -8,7 +8,6 @@ describe('recurse.async', function() {
   it('should return an array of files', function(cb) {
     recurse('test/fixtures', function(err, files) {
       if (err) return cb(err);
-
       assert(Array.isArray(files));
       assert(files.length);
       cb();
@@ -28,7 +27,11 @@ describe('recurse.async', function() {
   it('should create file objects', function(cb) {
     recurse('test/fixtures', function(err, files) {
       if (err) return cb(err);
-      assert(Buffer.isBuffer(files[0].contents));
+      files.forEach(function(file) {
+        if (file.stat.isFile()) {
+          assert(Buffer.isBuffer(file.contents));
+        }
+      });
       cb();
     });
   });
