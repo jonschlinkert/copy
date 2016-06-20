@@ -30,15 +30,4 @@ describe('recurse.promise', function() {
         cb();
       }, cb);
   });
-
-  it('should handle errors', function(cb) {
-    recurse.promise('foo/')
-      .then(function(files) {
-        assert(Array.isArray(files));
-        assert(files.length);
-        cb(new Error('expected an error'));
-      }, function(err) {
-        cb(); // if we're here, error was handled correctly
-      });
-  });
 });

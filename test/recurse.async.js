@@ -35,11 +35,4 @@ describe('recurse.async', function() {
       cb();
     });
   });
-
-  it('should handle errors', function(cb) {
-    recurse('foo/', function(err, files) {
-      if (!err) return cb(new Error('expected an error'));
-      cb();
-    });
-  });
 });
