@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 
-var copy = require('../index');
+var copy = require('..');
+var log = require('log-ok');
+var argv = process.argv.slice(2);
+var dir = argv.pop();
+var patterns = argv;
 
-var patterns = process.argv[2],
-    dir = process.argv[3];
-
-if (! patterns || ! dir) {
+if (!patterns || !dir) {
   console.log('Usage: copy <patterns> <dir>');
 } else {
-  copy(patterns, dir, function(err, file) {
+  copy(patterns, dir, function(err, files) {
     if (err) {
       console.error(err);
       process.exit(1);
-    } else {
-      process.exit(0);
     }
+
+    files.forEach(function(file) {
+      log(file.relative);
+    });
+    process.exit(0);
   });
 }
