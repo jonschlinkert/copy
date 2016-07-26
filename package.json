@@ -1,7 +1,7 @@
 {
   "name": "copy",
   "description": "Copy files or directories using globs.",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "homepage": "https://github.com/jonschlinkert/copy",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/copy",
