@@ -32,6 +32,7 @@
     "glob-parent": "^2.0.0",
     "graceful-fs": "^4.1.4",
     "has-glob": "^0.1.1",
+    "is-absolute": "^0.2.5",
     "lazy-cache": "^2.0.1",
     "log-ok": "^0.1.1",
     "matched": "^0.4.1",
