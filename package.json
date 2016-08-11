@@ -38,7 +38,8 @@
     "matched": "^0.4.1",
     "mkdirp": "^0.5.1",
     "resolve-dir": "^0.1.0",
-    "to-file": "^0.2.0"
+    "to-file": "^0.2.0",
+    "yargs-parser": "^3.1.0"
   },
   "devDependencies": {
     "assert-fs": "^0.1.0",
