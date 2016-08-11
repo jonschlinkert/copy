@@ -3,7 +3,7 @@
 var copy = require('..');
 var log = require('log-ok');
 var argv = require('yargs-parser')(process.argv.slice(2), {
-  alias: {src: 's', dest: 'd', cwd: 'c'},
+  alias: {src: 's', dest: 'd', cwd: 'c', verbose: 'v'},
   default: {cwd: process.cwd()},
 });
 
@@ -18,9 +18,12 @@ if (!src || !dest) {
       console.error(err);
       process.exit(1);
     }
-    files.forEach(function(file) {
-      log(file.relative);
-    });
+
+    if (argv.verbose) {
+      files.forEach(function(file) {
+        log(file.relative);
+      });
+    }
     process.exit(0);
   });
 }

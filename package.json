@@ -91,7 +91,9 @@
     "reflinks": [
       "gulp",
       "verb",
-      "verb-readme-generator"
+      "verb-readme-generator",
+      "verb-generate-readme",
+      "yargs-parser"
     ],
     "lint": {
       "reflinks": true
