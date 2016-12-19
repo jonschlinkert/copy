@@ -16,7 +16,8 @@
   ],
   "main": "index.js",
   "bin": {
-    "copy": "bin/cli.js"
+    "copy": "bin/cli.js",
+    "copy-cli": "bin/cli.js"
   },
   "engines": {
     "node": ">=0.10.0"
