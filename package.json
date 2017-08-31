@@ -4,6 +4,14 @@
   "version": "0.3.0",
   "homepage": "https://github.com/jonschlinkert/copy",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Brian Leathem (blog.bleathem.ca)",
+    "Brian Woodward (https://twitter.com/doowb)",
+    "gaozhenze (https://github.com/SoulRIver2015)",
+    "Guilherme Santiago (https://gsantiago.github.io)",
+    "Joakim Carlstein (http://joakim.beng.se)",
+    "Jon Schlinkert (http://twitter.com/jonschlinkert)"
+  ],
   "repository": "jonschlinkert/copy",
   "bugs": {
     "url": "https://github.com/jonschlinkert/copy/issues"
