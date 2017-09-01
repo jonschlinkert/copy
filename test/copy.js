@@ -70,6 +70,16 @@ describe('copy', function() {
     });
   });
 
+  it.only('should copy nested directories', function(cb) {
+    var src = ['test/fixtures/nested/**/*.txt', 'test/fixtures/nested-2/**/*'];
+    var dest = 'test/actual';
+    var expected = support.createExpected(['nested/**/*.txt', 'nested-2/**/*'], {cwd: 'test/fixtures', dest: dest});
+    copy(src, dest, function(err) {
+      if (err) return cb(err);
+      existsEach(expected, cb);
+    });
+  });
+
   it('should copy an array of files from a cwd', function(cb) {
     var src = ['a.txt', 'b.txt'];
     var dest = 'test/actual';
