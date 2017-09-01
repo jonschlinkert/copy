@@ -49,8 +49,6 @@ exports.createExpected = function(pattern, options) {
   var opts = utils.extend({cwd: process.cwd()}, options);
   var filepaths = utils.glob.sync(pattern, opts);
   return filepaths.map(function(filepath) {
-    var file = utils.toFile(path.resolve(opts.cwd, filepath), {cwd: opts.cwd, read: false});
-    file.path = path.resolve(opts.dest, file.relative);
-    return file;
+    return {dest: path.resolve(opts.destBase, filepath)};
   });
 };

@@ -97,8 +97,18 @@ function copyEach(files, dir, options, cb) {
 
   utils.each(files, function(filename, next) {
     var filepath = path.resolve(opts.cwd, filename);
+    if (utils.isDirectory(filepath)) {
+      next()
+      return;
+    }
     copyOne(filepath, dir, opts, next);
-  }, cb);
+  }, function(err, arr) {
+    if (err) {
+      cb(err);
+      return;
+    }
+    cb(null, arr.filter(Boolean));
+  });
 }
 
 /**

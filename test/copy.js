@@ -7,6 +7,7 @@ var assert = require('assert');
 require('assert-path')(assert);
 require('assert-fs')(assert);
 var exists = support.exists;
+var eachExists = support.eachExists;
 var copy = require('..');
 
 describe('copy', function() {
@@ -70,13 +71,17 @@ describe('copy', function() {
     });
   });
 
-  it.only('should copy nested directories', function(cb) {
+  it('should copy nested directories', function(cb) {
     var src = ['test/fixtures/nested/**/*.txt', 'test/fixtures/nested-2/**/*'];
     var dest = 'test/actual';
-    var expected = support.createExpected(['nested/**/*.txt', 'nested-2/**/*'], {cwd: 'test/fixtures', dest: dest});
-    copy(src, dest, function(err) {
+    var expected = support.createExpected(['nested/**/*.txt', 'nested-2/**/*'], {
+      cwd: 'test/fixtures',
+      destBase: dest
+    });
+
+    copy(src, dest, {srcBase: 'test/fixtures'}, function(err) {
       if (err) return cb(err);
-      existsEach(expected, cb);
+      eachExists(expected, cb);
     });
   });
 
